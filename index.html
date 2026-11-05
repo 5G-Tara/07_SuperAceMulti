@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prototype</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+        h1 { color: #00ffcc; margin-bottom: 5px; }
+        p { color: #aaaaaa; margin-bottom: 30px; }
+
+        .version-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .version-card {
+            display: block;
+            background-color: #242424;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #ffffff;
+            font-weight: bold;
+            border: 2px solid #3a3a3a;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+        .version-card:hover { border-color: #00ffcc; background-color: #333333; }
+        .version-card:focus-visible { outline: 2px solid #00ffcc; outline-offset: 2px; }
+
+        .version-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .version-changes {
+            margin: 10px 0 0;
+            padding: 10px 0 0 18px;
+            border-top: 1px solid #3a3a3a;
+            color: #cccccc;
+            font-weight: normal;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .tag {
+            font-size: 0.8rem;
+            background-color: #00ffcc;
+            color: #1a1a1a;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="title">Prototype</h1>
+    <p>Pick a build version to play:</p>
+    <div class="version-list" id="version-list">Loading...</div>
+
+    <script>
+        // versions.json is generated on GitHub by scripts/make-versions.js
+        fetch('./versions.json', { cache: 'no-store' })
+            .then(res => res.json())
+            .then(data => {
+                document.title = data.title;
+                document.getElementById('title').textContent = data.title;
+
+                const list = document.getElementById('version-list');
+                list.innerHTML = '';
+                if (data.versions.length === 0) {
+                    list.textContent = 'No versions yet.';
+                    return;
+                }
+
+                // already sorted newest first
+                data.versions.forEach(v => {
+                    const a = document.createElement('a');
+                    a.className = 'version-card';
+                    a.href = `./${v.version}/`;
+
+                    const head = document.createElement('div');
+                    head.className = 'version-head';
+
+                    const label = document.createElement('span');
+                    label.textContent = v.version;
+                    head.appendChild(label);
+
+                    if (v.latest) {
+                        const tag = document.createElement('span');
+                        tag.className = 'tag';
+                        tag.textContent = 'latest';
+                        head.appendChild(tag);
+                    }
+                    a.appendChild(head);
+
+                    if (v.changes.length > 0) {
+                        const ul = document.createElement('ul');
+                        ul.className = 'version-changes';
+                        v.changes.forEach(c => {
+                            const li = document.createElement('li');
+                            li.textContent = c;
+                            ul.appendChild(li);
+                        });
+                        a.appendChild(ul);
+                    }
+
+                    list.appendChild(a);
+                });
+            })
+            .catch(() => {
+                document.getElementById('version-list').textContent =
+                    'Could not load versions.json';
+            });
+    </script>
+</body>
+</html>
