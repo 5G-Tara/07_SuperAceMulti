@@ -1,0 +1,1 @@
+v0.0.2 : Balanced all (FS per Spin Hit Rate = 73%) 
